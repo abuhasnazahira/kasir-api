@@ -25,18 +25,13 @@ HANDLERS
 func getProdukByID(w http.ResponseWriter, r *http.Request) {
 	id, err := helpers.GetIDFromURL(r, routes.ProdukByID)
 	if err != nil {
-		http.Error(w, "Invalid Produk ID", http.StatusBadRequest)
+		helpers.Error(w, http.StatusBadRequest, "Invalid Produk ID")
 		return
 	}
 
 	prod, err := produkService.GetByID(id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound) // 404 kalau tidak ketemu
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  "OK",
-			"message": err.Error(), // "produk tidak ditemukan"
-		})
+		helpers.Error(w, http.StatusNotFound, err.Error())
 		return
 	}
 
@@ -48,7 +43,7 @@ func getProdukByID(w http.ResponseWriter, r *http.Request) {
 func updateProdukByID(w http.ResponseWriter, r *http.Request) {
 	id, err := helpers.GetIDFromURL(r, routes.ProdukByID)
 	if err != nil {
-		http.Error(w, "Invalid Produk ID", http.StatusBadRequest)
+		helpers.Error(w, http.StatusBadRequest, "Invalid Produk ID")
 		return
 	}
 
@@ -60,12 +55,7 @@ func updateProdukByID(w http.ResponseWriter, r *http.Request) {
 
 	prod, err := produkService.Update(id, updatedProduk)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound) // 404 kalau tidak ketemu
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  "OK",
-			"message": err.Error(), // "produk tidak ditemukan"
-		})
+		helpers.Error(w, http.StatusNotFound, err.Error())
 		return
 	}
 
@@ -77,33 +67,24 @@ func updateProdukByID(w http.ResponseWriter, r *http.Request) {
 func deleteProdukByID(w http.ResponseWriter, r *http.Request) {
 	id, err := helpers.GetIDFromURL(r, routes.ProdukByID)
 	if err != nil {
-		http.Error(w, "Invalid Produk ID", http.StatusBadRequest)
+		helpers.Error(w, http.StatusBadRequest, "Invalid Produk ID")
 		return
 	}
 
 	err = produkService.Delete(id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusNotFound) // 404 kalau tidak ketemu
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  "OK",
-			"message": err.Error(), // "produk tidak ditemukan"
-		})
+		helpers.Error(w, http.StatusNotFound, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"message": "Sukses delete",
-		"status":  "OK",
-	})
+	helpers.SuccessMessage(w, "Sukses delete")
 }
 
 // GET /api/produk
 func getAllProduk(w http.ResponseWriter, r *http.Request) {
 	prod, err := produkService.GetAll()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		helpers.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -115,19 +96,13 @@ func getAllProduk(w http.ResponseWriter, r *http.Request) {
 func createProduk(w http.ResponseWriter, r *http.Request) {
 	var produkBaru models.Produk
 	if err := json.NewDecoder(r.Body).Decode(&produkBaru); err != nil {
-		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
+		helpers.Error(w, http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
 
 	prod, err := produkService.Create(produkBaru)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  "OK",
-			"message": err.Error(), // ambil langsung dari return error
-		})
+		helpers.Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -153,7 +128,7 @@ func RegisterProdukRoutes() {
 		case http.MethodDelete:
 			deleteProdukByID(w, r)
 		default:
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+			helpers.Error(w, http.StatusMethodNotAllowed, "Method Not Allowed")
 		}
 	})
 
@@ -165,7 +140,7 @@ func RegisterProdukRoutes() {
 		case http.MethodPost:
 			createProduk(w, r)
 		default:
-			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+			helpers.Error(w, http.StatusMethodNotAllowed, "Method Not Allowed")
 		}
 	})
 }

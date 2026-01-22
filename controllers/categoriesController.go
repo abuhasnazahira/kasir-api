@@ -26,18 +26,17 @@ func InitKategoriController(svc *services.KategoriService) {
 HANDLERS
 ====================
 */
-
 // GET /api/categories/{id}
 func getKategoriByID(w http.ResponseWriter, r *http.Request) {
 	id, err := helpers.GetIDFromURL(r, routes.KategoriByID)
 	if err != nil {
-		http.Error(w, "Invalid Kategori ID", http.StatusBadRequest)
+		helpers.Error(w, http.StatusBadRequest, "Invalid Kategori ID")
 		return
 	}
 
 	kat, err := kategoriService.GetByID(id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		helpers.Error(w, http.StatusNotFound, err.Error())
 		return
 	}
 
@@ -49,19 +48,19 @@ func getKategoriByID(w http.ResponseWriter, r *http.Request) {
 func updateKategoriByID(w http.ResponseWriter, r *http.Request) {
 	id, err := helpers.GetIDFromURL(r, routes.KategoriByID)
 	if err != nil {
-		http.Error(w, "Invalid Kategori ID", http.StatusBadRequest)
+		helpers.Error(w, http.StatusBadRequest, "Invalid Kategori ID")
 		return
 	}
 
 	var updatedKategori models.Kategori
 	if err := json.NewDecoder(r.Body).Decode(&updatedKategori); err != nil {
-		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
+		helpers.Error(w, http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
 
 	kat, err := kategoriService.Update(id, updatedKategori)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		helpers.Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -73,34 +72,24 @@ func updateKategoriByID(w http.ResponseWriter, r *http.Request) {
 func deleteKategoriByID(w http.ResponseWriter, r *http.Request) {
 	id, err := helpers.GetIDFromURL(r, routes.KategoriByID)
 	if err != nil {
-		http.Error(w, "Invalid Kategori ID", http.StatusBadRequest)
+		helpers.Error(w, http.StatusBadRequest, "Invalid Kategori ID")
 		return
 	}
 
-	err = kategoriService.Delete(id)
 	err = kategoriService.Delete(id)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest) // 400 karena tidak bisa hapus
-		json.NewEncoder(w).Encode(map[string]string{
-			"status":  "OK",
-			"message": err.Error(), // "kategori masih digunakan oleh produk, tidak bisa dihapus"
-		})
+		helpers.Error(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{
-		"message": "Sukses delete",
-		"status":  "OK",
-	})
+	helpers.SuccessMessage(w, "Sukses delete")
 }
 
 // GET /api/categories
 func getAllKategori(w http.ResponseWriter, r *http.Request) {
 	kat, err := kategoriService.GetAll()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		helpers.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -112,13 +101,13 @@ func getAllKategori(w http.ResponseWriter, r *http.Request) {
 func createKategori(w http.ResponseWriter, r *http.Request) {
 	var kategoriBaru models.Kategori
 	if err := json.NewDecoder(r.Body).Decode(&kategoriBaru); err != nil {
-		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
+		helpers.Error(w, http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
 
 	prod, err := kategoriService.Create(kategoriBaru)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		helpers.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
