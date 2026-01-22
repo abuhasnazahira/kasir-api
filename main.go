@@ -3,9 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"kasir-api/controllers"
-	"kasir-api/repositories"
-	"kasir-api/services"
+	"kasir-api/bootstrap"
 	"net/http"
 )
 
@@ -29,21 +27,8 @@ func main() {
 		})
 	})
 
-	// buat repository
-	produkRepo := repositories.NewProdukRepository()
-	kategoriRepo := repositories.NewKategoriRepository()
-
-	// buat service
-	produkService := services.NewProdukService(produkRepo, kategoriRepo)
-	kategoriService := services.NewKategoriService(kategoriRepo, produkRepo)
-
-	// inject service ke controller
-	controllers.InitProdukController(produkService)
-	controllers.InitKategoriController(kategoriService)
-
-	//REGISTER ROUTES
-	controllers.RegisterProdukRoutes()
-	controllers.RegisterKategoriRoutes()
+	// Initial App
+	bootstrap.InitApp()
 
 	//initial and running server
 	fmt.Print("Server running di localhost:8080")
