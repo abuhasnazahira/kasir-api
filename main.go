@@ -20,6 +20,15 @@ func main() {
 		// w.Write([]byte("Ok"))
 	}) //localhost:8080/health
 
+	// Welcome endpoint
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "OK",
+			"message": "Selamat datang di Go Kasir",
+		})
+	})
+
 	// buat repository
 	produkRepo := repositories.NewProdukRepository()
 	kategoriRepo := repositories.NewKategoriRepository()
