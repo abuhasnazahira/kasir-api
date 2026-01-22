@@ -5,30 +5,15 @@ import (
 	"kasir-api/helpers"
 	"kasir-api/models"
 	"kasir-api/routes"
+	"kasir-api/services"
 	"net/http"
 )
 
-/*
-====================
-DATA (GLOBAL)
-====================
-*/
+var produkService *services.ProdukService
 
-var produk = []models.Produk{
-	{ID: 1, Nama: "Indomie Godog", Harga: 3500, Stok: 10},
-	{ID: 2, Nama: "Vit 1000ml", Harga: 3000, Stok: 40},
+func InitProdukController(svc *services.ProdukService) {
+	produkService = svc
 }
-
-/*
-====================
-HELPER
-====================
-*/
-
-// func getIDFromURL(r *http.Request) (int, error) {
-// 	idStr := strings.TrimPrefix(r.URL.Path, "/api/produk/")
-// 	return strconv.Atoi(idStr)
-// }
 
 /*
 ====================
@@ -44,15 +29,19 @@ func getProdukByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, p := range produk {
-		if p.ID == id {
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(p)
-			return
-		}
+	prod, err := produkService.GetByID(id)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound) // 404 kalau tidak ketemu
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "OK",
+			"message": err.Error(), // "produk tidak ditemukan"
+		})
+		return
 	}
 
-	http.Error(w, "Produk belum ada", http.StatusNotFound)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(prod)
 }
 
 // PUT /api/produk/{id}
@@ -69,18 +58,19 @@ func updateProdukByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i := range produk {
-		if produk[i].ID == id {
-			updatedProduk.ID = id
-			produk[i] = updatedProduk
-
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(updatedProduk)
-			return
-		}
+	prod, err := produkService.Update(id, updatedProduk)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound) // 404 kalau tidak ketemu
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "OK",
+			"message": err.Error(), // "produk tidak ditemukan"
+		})
+		return
 	}
 
-	http.Error(w, "Produk belum ada", http.StatusNotFound)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(prod)
 }
 
 // DELETE /api/produk/{id}
@@ -91,20 +81,59 @@ func deleteProdukByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for i, p := range produk {
-		if p.ID == id {
-			produk = append(produk[:i], produk[i+1:]...)
-
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(map[string]string{
-				"message": "Sukses delete",
-				"status":  "OK",
-			})
-			return
-		}
+	err = produkService.Delete(id)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusNotFound) // 404 kalau tidak ketemu
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "OK",
+			"message": err.Error(), // "produk tidak ditemukan"
+		})
+		return
 	}
 
-	http.Error(w, "Produk belum ada", http.StatusNotFound)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"message": "Sukses delete",
+		"status":  "OK",
+	})
+}
+
+// GET /api/produk
+func getAllProduk(w http.ResponseWriter, r *http.Request) {
+	prod, err := produkService.GetAll()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(prod)
+}
+
+// POST /api/produk
+func createProduk(w http.ResponseWriter, r *http.Request) {
+	var produkBaru models.Produk
+	if err := json.NewDecoder(r.Body).Decode(&produkBaru); err != nil {
+		http.Error(w, "Invalid Request Body", http.StatusBadRequest)
+		return
+	}
+
+	prod, err := produkService.Create(produkBaru)
+	if err != nil {
+		w.Header().Set("Content-Type", "application/json")
+
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{
+			"status":  "OK",
+			"message": err.Error(), // ambil langsung dari return error
+		})
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	json.NewEncoder(w).Encode(prod)
 }
 
 /*
@@ -130,25 +159,11 @@ func RegisterProdukRoutes() {
 
 	// GET / POST
 	http.HandleFunc(routes.Produk, func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json")
-
 		switch r.Method {
 		case http.MethodGet:
-			json.NewEncoder(w).Encode(produk)
-
+			getAllProduk(w, r)
 		case http.MethodPost:
-			var produkBaru models.Produk
-			if err := json.NewDecoder(r.Body).Decode(&produkBaru); err != nil {
-				http.Error(w, "Invalid Request Body", http.StatusBadRequest)
-				return
-			}
-
-			produkBaru.ID = len(produk) + 1
-			produk = append(produk, produkBaru)
-
-			w.WriteHeader(http.StatusCreated)
-			json.NewEncoder(w).Encode(produkBaru)
-
+			createProduk(w, r)
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}

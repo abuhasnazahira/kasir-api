@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"kasir-api/controllers"
+	"kasir-api/repositories"
+	"kasir-api/services"
 	"net/http"
 )
-
-//data modeling menggunakan struct
 
 func main() {
 	//health endpoint for checking
@@ -20,7 +20,19 @@ func main() {
 		// w.Write([]byte("Ok"))
 	}) //localhost:8080/health
 
-	// 🔥 REGISTER ROUTES
+	// buat repository
+	produkRepo := repositories.NewProdukRepository()
+	kategoriRepo := repositories.NewKategoriRepository()
+
+	// buat service
+	produkService := services.NewProdukService(produkRepo, kategoriRepo)
+	kategoriService := services.NewKategoriService(kategoriRepo, produkRepo)
+
+	// inject service ke controller
+	controllers.InitProdukController(produkService)
+	controllers.InitKategoriController(kategoriService)
+
+	//REGISTER ROUTES
 	controllers.RegisterProdukRoutes()
 	controllers.RegisterKategoriRoutes()
 
