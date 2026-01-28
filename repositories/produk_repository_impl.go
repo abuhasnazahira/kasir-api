@@ -73,18 +73,18 @@ func (r *produkRepo) Update(id int, p models.Product) (*models.Product, error) {
 	}
 
 	// Select updated product by id
-	var updatedProduct models.Product
+	// var updatedProduct models.Product
 	err = r.db.QueryRow(`SELECT p.product_id, p.name, p.price, p.stock, c.category_id, c.name, c.description 
 		FROM product p 
 		JOIN category c ON p.category_id = c.category_id 
 		WHERE p.product_id = $1`, id).
-		Scan(&updatedProduct.ID, &updatedProduct.Name, &updatedProduct.Price, &updatedProduct.Stock,
-			&updatedProduct.Category.ID, &updatedProduct.Category.Name, &updatedProduct.Category.Description)
+		Scan(&p.ID, &p.Name, &p.Price, &p.Stock,
+			&p.Category.ID, &p.Category.Name, &p.Category.Description)
 	if err != nil {
 		return nil, err
 	}
 
-	return &updatedProduct, nil
+	return &p, nil
 }
 
 func (r *produkRepo) Delete(id int) error {
