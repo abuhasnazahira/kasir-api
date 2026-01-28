@@ -3,9 +3,9 @@ package routes
 const (
 	API = "/api"
 
-	Produk     = API + "/produk"
-	ProdukByID = Produk + "/"
+	Product     = API + "/product"
+	ProductByID = Product + "/"
 
-	Kategori     = API + "/categories"
-	KategoriByID = Kategori + "/"
+	Category     = API + "/categories"
+	CategoryByID = Category + "/"
 )

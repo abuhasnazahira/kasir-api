@@ -11,18 +11,18 @@ import (
 
 func InitApp(db *sql.DB) {
 	// init Repository
-	produkRepo := repositories.NewProdukRepository(db)
-	kategoriRepo := repositories.NewKategoriRepository(db)
+	productRepo := repositories.NewProdukRepository(db)
+	categoryRepo := repositories.NewCategoryRepository(db)
 
 	// init Service
-	produkService := services.NewProdukService(produkRepo, kategoriRepo)
-	kategoriService := services.NewKategoriService(kategoriRepo, produkRepo)
+	productService := services.NewProductService(productRepo, categoryRepo)
+	categoryService := services.NewCategoryService(categoryRepo, productRepo)
 
 	// init Controller
-	controllers.InitProdukController(produkService)
-	controllers.InitKategoriController(kategoriService)
+	controllers.InitProductHandler(productService)
+	controllers.InitCategoryHandler(categoryService)
 
 	// init Routes
-	controllers.RegisterProdukRoutes()
-	controllers.RegisterKategoriRoutes()
+	controllers.RegisterProductRoutes()
+	controllers.RegisterCategoryRoutes()
 }

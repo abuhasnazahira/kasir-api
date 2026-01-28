@@ -6,30 +6,30 @@ import (
 	"kasir-api/repositories"
 )
 
-type ProdukService struct {
+type ProductService struct {
 	repo         repositories.ProdukRepository
 	kategoriRepo repositories.CategoryRepository // untuk validasi kategori
 }
 
-func NewProdukService(repo repositories.ProdukRepository, kategoriRepo repositories.CategoryRepository) *ProdukService {
-	return &ProdukService{
+func NewProductService(repo repositories.ProdukRepository, kategoriRepo repositories.CategoryRepository) *ProductService {
+	return &ProductService{
 		repo:         repo,
 		kategoriRepo: kategoriRepo,
 	}
 }
 
 // GetAll ambil semua produk
-func (s *ProdukService) GetAll() ([]models.Product, error) {
+func (s *ProductService) GetAll() ([]models.Product, error) {
 	return s.repo.GetAll()
 }
 
 // GetByID ambil produk berdasarkan ID
-func (s *ProdukService) GetByID(id int) (*models.Product, error) {
+func (s *ProductService) GetByID(id int) (*models.Product, error) {
 	return s.repo.GetByID(id)
 }
 
 // Create buat produk baru
-func (s *ProdukService) Create(p models.Product) (*models.Product, error) {
+func (s *ProductService) Create(p models.Product) (*models.Product, error) {
 	// validasi kategori
 	if _, err := s.kategoriRepo.GetByID(p.Category.ID); err != nil {
 		return nil, errors.New("Kategori tidak ditemukan")
@@ -39,7 +39,7 @@ func (s *ProdukService) Create(p models.Product) (*models.Product, error) {
 }
 
 // Update produk berdasarkan ID
-func (s *ProdukService) Update(id int, p models.Product) (*models.Product, error) {
+func (s *ProductService) Update(id int, p models.Product) (*models.Product, error) {
 	// validasi kategori
 	if _, err := s.kategoriRepo.GetByID(p.Category.ID); err != nil {
 		return nil, errors.New("kategori tidak ditemukan")
@@ -49,6 +49,6 @@ func (s *ProdukService) Update(id int, p models.Product) (*models.Product, error
 }
 
 // Delete produk berdasarkan ID
-func (s *ProdukService) Delete(id int) error {
+func (s *ProductService) Delete(id int) error {
 	return s.repo.Delete(id)
 }

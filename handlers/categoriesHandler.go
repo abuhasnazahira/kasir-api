@@ -15,10 +15,10 @@ DATA (GLOBAL)
 ====================
 */
 
-var kategoriService *services.KategoriService
+var categoryService *services.CategoryService
 
-func InitKategoriController(svc *services.KategoriService) {
-	kategoriService = svc
+func InitCategoryHandler(svc *services.CategoryService) {
+	categoryService = svc
 }
 
 /*
@@ -27,14 +27,14 @@ HANDLERS
 ====================
 */
 // GET /api/categories/{id}
-func getKategoriByID(w http.ResponseWriter, r *http.Request) {
-	id, err := helpers.GetIDFromURL(r, routes.KategoriByID)
+func getCategoryByID(w http.ResponseWriter, r *http.Request) {
+	id, err := helpers.GetIDFromURL(r, routes.CategoryByID)
 	if err != nil {
 		helpers.Error(w, http.StatusBadRequest, "Invalid Kategori ID")
 		return
 	}
 
-	kat, err := kategoriService.GetByID(id)
+	kat, err := categoryService.GetByID(id)
 	if err != nil {
 		helpers.Error(w, http.StatusNotFound, err.Error())
 		return
@@ -45,20 +45,20 @@ func getKategoriByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // PUT /api/categories/{id}
-func updateKategoriByID(w http.ResponseWriter, r *http.Request) {
-	id, err := helpers.GetIDFromURL(r, routes.KategoriByID)
+func updateCategoryByID(w http.ResponseWriter, r *http.Request) {
+	id, err := helpers.GetIDFromURL(r, routes.CategoryByID)
 	if err != nil {
 		helpers.Error(w, http.StatusBadRequest, "Invalid Kategori ID")
 		return
 	}
 
-	var updatedKategori models.Kategori
+	var updatedKategori models.Category
 	if err := json.NewDecoder(r.Body).Decode(&updatedKategori); err != nil {
 		helpers.Error(w, http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
 
-	kat, err := kategoriService.Update(id, updatedKategori)
+	kat, err := categoryService.Update(id, updatedKategori)
 	if err != nil {
 		helpers.Error(w, http.StatusBadRequest, err.Error())
 		return
@@ -69,14 +69,14 @@ func updateKategoriByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // DELETE /api/categories/{id}
-func deleteKategoriByID(w http.ResponseWriter, r *http.Request) {
-	id, err := helpers.GetIDFromURL(r, routes.KategoriByID)
+func deleteCategoryByID(w http.ResponseWriter, r *http.Request) {
+	id, err := helpers.GetIDFromURL(r, routes.CategoryByID)
 	if err != nil {
 		helpers.Error(w, http.StatusBadRequest, "Invalid Kategori ID")
 		return
 	}
 
-	err = kategoriService.Delete(id)
+	err = categoryService.Delete(id)
 	if err != nil {
 		helpers.Error(w, http.StatusBadRequest, err.Error())
 		return
@@ -86,8 +86,8 @@ func deleteKategoriByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET /api/categories
-func getAllKategori(w http.ResponseWriter, r *http.Request) {
-	kat, err := kategoriService.GetAll()
+func getAllCategory(w http.ResponseWriter, r *http.Request) {
+	kat, err := categoryService.GetAll()
 	if err != nil {
 		helpers.Error(w, http.StatusInternalServerError, err.Error())
 		return
@@ -98,14 +98,14 @@ func getAllKategori(w http.ResponseWriter, r *http.Request) {
 }
 
 // POST /api/categories
-func createKategori(w http.ResponseWriter, r *http.Request) {
-	var kategoriBaru models.Kategori
-	if err := json.NewDecoder(r.Body).Decode(&kategoriBaru); err != nil {
+func createCategory(w http.ResponseWriter, r *http.Request) {
+	var newCategory models.Category
+	if err := json.NewDecoder(r.Body).Decode(&newCategory); err != nil {
 		helpers.Error(w, http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
 
-	prod, err := kategoriService.Create(kategoriBaru)
+	prod, err := categoryService.Create(newCategory)
 	if err != nil {
 		helpers.Error(w, http.StatusInternalServerError, err.Error())
 		return
@@ -121,28 +121,28 @@ func createKategori(w http.ResponseWriter, r *http.Request) {
 ROUTING
 ====================
 */
-func RegisterKategoriRoutes() {
+func RegisterCategoryRoutes() {
 	// GET / PUT / DELETE by ID
-	http.HandleFunc(routes.KategoriByID, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(routes.CategoryByID, func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			getKategoriByID(w, r)
+			getCategoryByID(w, r)
 		case http.MethodPut:
-			updateKategoriByID(w, r)
+			updateCategoryByID(w, r)
 		case http.MethodDelete:
-			deleteKategoriByID(w, r)
+			deleteCategoryByID(w, r)
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
 	})
 
 	// GET / POST
-	http.HandleFunc(routes.Kategori, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(routes.Category, func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			getAllKategori(w, r)
+			getAllCategory(w, r)
 		case http.MethodPost:
-			createKategori(w, r)
+			createCategory(w, r)
 		default:
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}

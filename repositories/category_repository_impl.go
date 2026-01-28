@@ -7,15 +7,15 @@ import (
 )
 
 // Implementasi in-memory repository, tetap return error
-type kategoriRepo struct {
-	// data []models.Kategori
+type categoryRepo struct {
+	// data []models.Category
 	db *sql.DB
 }
 
-// NewKategoriRepository buat instance in-memory repository
-func NewKategoriRepository(database *sql.DB) KategoriRepository {
-	return &kategoriRepo{
-		// data: []models.Kategori{
+// NewCategoryRepository buat instance in-memory repository
+func NewCategoryRepository(database *sql.DB) CategoryRepository {
+	return &categoryRepo{
+		// data: []models.Category{
 		// 	{ID: 1, Name: "Makanan", Description: "Produk makanan"},
 		// 	{ID: 2, Name: "Minuman", Description: "Produk minuman"},
 		// },
@@ -23,16 +23,16 @@ func NewKategoriRepository(database *sql.DB) KategoriRepository {
 	}
 }
 
-func (r *kategoriRepo) GetAll() ([]models.Kategori, error) {
+func (r *categoryRepo) GetAll() ([]models.Category, error) {
 	rows, err := r.db.Query("SELECT category_id, name, description FROM category")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var kategoris []models.Kategori
+	var kategoris []models.Category
 	for rows.Next() {
-		var k models.Kategori
+		var k models.Category
 		if err := rows.Scan(&k.ID, &k.Name, &k.Description); err != nil {
 			return nil, err
 		}
@@ -41,19 +41,19 @@ func (r *kategoriRepo) GetAll() ([]models.Kategori, error) {
 	return kategoris, rows.Err()
 }
 
-func (r *kategoriRepo) GetByID(id int) (*models.Kategori, error) {
-	var k models.Kategori
-	err := r.db.QueryRow("SELECT id, name, description FROM kategori WHERE id = $1", id).Scan(&k.ID, &k.Name, &k.Description)
+func (r *categoryRepo) GetByID(id int) (*models.Category, error) {
+	var k models.Category
+	err := r.db.QueryRow("SELECT category_id, name, description FROM category WHERE category_id = $1", id).Scan(&k.ID, &k.Name, &k.Description)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, errors.New("kategori tidak ditemukan")
+			return nil, errors.New("Kategori tidak ditemukan")
 		}
 		return nil, err
 	}
 	return &k, nil
 }
 
-func (r *kategoriRepo) Create(p models.Kategori) (*models.Kategori, error) {
+func (r *categoryRepo) Create(p models.Category) (*models.Category, error) {
 	var id int
 	err := r.db.QueryRow("INSERT INTO category (name, description) VALUES ($1, $2) RETURNING category_id", p.Name, p.Description).Scan(&id)
 	if err != nil {
@@ -63,7 +63,7 @@ func (r *kategoriRepo) Create(p models.Kategori) (*models.Kategori, error) {
 	return &p, nil
 }
 
-func (r *kategoriRepo) Update(id int, p models.Kategori) (*models.Kategori, error) {
+func (r *categoryRepo) Update(id int, p models.Category) (*models.Category, error) {
 	result, err := r.db.Exec("UPDATE category SET name = $1, description = $2 WHERE category_id = $3", p.Name, p.Description, id)
 	if err != nil {
 		return nil, err
@@ -79,7 +79,7 @@ func (r *kategoriRepo) Update(id int, p models.Kategori) (*models.Kategori, erro
 	return &p, nil
 }
 
-func (r *kategoriRepo) Delete(id int) error {
+func (r *categoryRepo) Delete(id int) error {
 	result, err := r.db.Exec("DELETE FROM category WHERE category_id = $1", id)
 	if err != nil {
 		return err
