@@ -1,15 +1,18 @@
 package bootstrap
 
 import (
-	"kasir-api/controllers"
+	"database/sql"
+	controllers "kasir-api/handlers"
 	"kasir-api/repositories"
 	"kasir-api/services"
+
+	_ "github.com/lib/pq"
 )
 
-func InitApp() {
+func InitApp(db *sql.DB) {
 	// init Repository
-	produkRepo := repositories.NewProdukRepository()
-	kategoriRepo := repositories.NewKategoriRepository()
+	produkRepo := repositories.NewProdukRepository(db)
+	kategoriRepo := repositories.NewKategoriRepository(db)
 
 	// init Service
 	produkService := services.NewProdukService(produkRepo, kategoriRepo)
