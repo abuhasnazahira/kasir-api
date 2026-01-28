@@ -57,7 +57,7 @@ func (r *produkRepo) GetByID(id int) (*models.Product, error) {
 }
 
 func (r *produkRepo) Create(p models.Product) (*models.Product, error) {
-	err := r.db.QueryRow("INSERT INTO product (name, price, stock, category_id) VALUES ($1, $2, $3, $4) RETURNING id",
+	err := r.db.QueryRow("INSERT INTO product (name, price, stock, category_id) VALUES ($1, $2, $3, $4) RETURNING product_id",
 		p.Name, p.Price, p.Stock, p.Category.ID).Scan(&p.ID)
 	if err != nil {
 		return nil, err
