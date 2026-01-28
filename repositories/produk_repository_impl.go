@@ -57,12 +57,26 @@ func (r *produkRepo) GetByID(id int) (*models.Product, error) {
 }
 
 func (r *produkRepo) Create(p models.Product) (*models.Product, error) {
+	var productID int
 	err := r.db.QueryRow("INSERT INTO product (name, price, stock, category_id) VALUES ($1, $2, $3, $4) RETURNING product_id",
-		p.Name, p.Price, p.Stock, p.Category.ID).Scan(&p.ID)
+		p.Name, p.Price, p.Stock, p.Category.ID).Scan(&productID)
 	if err != nil {
 		return nil, err
 	}
-	return &p, nil
+
+	// Select created product by id with category data
+	var createdProduct models.Product
+	err = r.db.QueryRow(`SELECT p.product_id, p.name, p.price, p.stock, c.category_id, c.name, c.description 
+		FROM product p 
+		JOIN category c ON p.category_id = c.category_id 
+		WHERE p.product_id = $1`, productID).
+		Scan(&createdProduct.ID, &createdProduct.Name, &createdProduct.Price, &createdProduct.Stock,
+			&createdProduct.Category.ID, &createdProduct.Category.Name, &createdProduct.Category.Description)
+	if err != nil {
+		return nil, err
+	}
+
+	return &createdProduct, nil
 }
 
 func (r *produkRepo) Update(id int, p models.Product) (*models.Product, error) {
@@ -73,18 +87,18 @@ func (r *produkRepo) Update(id int, p models.Product) (*models.Product, error) {
 	}
 
 	// Select updated product by id
-	// var updatedProduct models.Product
+	var updatedProduct models.Product
 	err = r.db.QueryRow(`SELECT p.product_id, p.name, p.price, p.stock, c.category_id, c.name, c.description 
 		FROM product p 
 		JOIN category c ON p.category_id = c.category_id 
 		WHERE p.product_id = $1`, id).
-		Scan(&p.ID, &p.Name, &p.Price, &p.Stock,
-			&p.Category.ID, &p.Category.Name, &p.Category.Description)
+		Scan(&updatedProduct.ID, &updatedProduct.Name, &updatedProduct.Price, &updatedProduct.Stock,
+			&updatedProduct.Category.ID, &updatedProduct.Category.Name, &updatedProduct.Category.Description)
 	if err != nil {
 		return nil, err
 	}
 
-	return &p, nil
+	return &updatedProduct, nil
 }
 
 func (r *produkRepo) Delete(id int) error {
