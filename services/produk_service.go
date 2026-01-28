@@ -31,7 +31,7 @@ func (s *ProdukService) GetByID(id int) (*models.Produk, error) {
 // Create buat produk baru
 func (s *ProdukService) Create(p models.Produk) (*models.Produk, error) {
 	// validasi kategori
-	if _, err := s.kategoriRepo.GetByID(p.CategoryID); err != nil {
+	if _, err := s.kategoriRepo.GetByID(p.Category.ID); err != nil {
 		return nil, errors.New("kategori tidak ditemukan")
 	}
 
@@ -41,7 +41,7 @@ func (s *ProdukService) Create(p models.Produk) (*models.Produk, error) {
 // Update produk berdasarkan ID
 func (s *ProdukService) Update(id int, p models.Produk) (*models.Produk, error) {
 	// validasi kategori
-	if _, err := s.kategoriRepo.GetByID(p.CategoryID); err != nil {
+	if _, err := s.kategoriRepo.GetByID(p.Category.ID); err != nil {
 		return nil, errors.New("kategori tidak ditemukan")
 	}
 
