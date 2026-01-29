@@ -4,7 +4,7 @@ import "kasir-api/models"
 
 // ProdukRepository defines contract for CRUD operations
 type ProdukRepository interface {
-	GetAll() ([]models.Product, error)
+	GetAll(limit, offset int, search string) ([]models.Product, int, int, error)
 	GetByID(id int) (*models.Product, error)
 	Create(p models.Product) (*models.Product, error)
 	Update(id int, p models.Product) (*models.Product, error)

@@ -19,8 +19,8 @@ func NewProductService(repo repositories.ProdukRepository, kategoriRepo reposito
 }
 
 // GetAll ambil semua produk
-func (s *ProductService) GetAll() ([]models.Product, error) {
-	return s.repo.GetAll()
+func (s *ProductService) GetAll(limit, offset int, search string) ([]models.Product, int, int, error) {
+	return s.repo.GetAll(limit, offset, search)
 }
 
 // GetByID ambil produk berdasarkan ID

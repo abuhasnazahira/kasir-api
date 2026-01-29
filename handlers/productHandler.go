@@ -6,7 +6,9 @@ import (
 	"kasir-api/models"
 	"kasir-api/routes"
 	"kasir-api/services"
+	"log"
 	"net/http"
+	"time"
 )
 
 var productService *services.ProductService
@@ -23,6 +25,9 @@ HANDLERS
 
 // GET /api/produk/{id}
 func getProductByID(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+	log.Println("📥 Get Product By ID")
+
 	id, err := helpers.GetIDFromURL(r, routes.ProductByID)
 	if err != nil {
 		helpers.Error(w, http.StatusBadRequest, "Invalid Produk ID")
@@ -35,8 +40,18 @@ func getProductByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := map[string]interface{}{
+		"responseCode":    http.StatusOK,
+		"responseMessage": "success",
+		"payload": map[string]interface{}{
+			"data": prod,
+		},
+	}
+
+	log.Printf("✅ Success get product id=%d in %v\n", id, time.Since(start))
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(prod)
+	json.NewEncoder(w).Encode(resp)
 }
 
 // PUT /api/produk/{id}
@@ -82,14 +97,56 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 
 // GET /api/produk
 func getAllProduct(w http.ResponseWriter, r *http.Request) {
-	prod, err := productService.GetAll()
+	start := time.Now()
+
+	log.Println("📥 Incoming request:", r.Method, r.URL.Path)
+	// Query all products with filtering, sorting, pagination if needed
+	var req models.Pagination
+
+	// decode JSON body
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		helpers.Error(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	// set nilai default jika tidak digunakan
+	// Default values
+	if req.Limit <= 0 {
+		req.Limit = 10
+	}
+	if req.Offset < 0 {
+		req.Offset = 0
+	}
+
+	log.Printf("🔎 Params → limit=%d offset=%d search='%s'\n",
+		req.Limit, req.Offset, req.Search,
+	)
+
+	prod, totalRecords, totalFiltered, err := productService.GetAll(req.Limit, req.Offset, req.Search)
 	if err != nil {
 		helpers.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	// FIX: ubah nil slice jadi empty slice
+	if prod == nil {
+		prod = []models.Product{}
+	}
+
+	resp := map[string]interface{}{
+		"responseCode":    http.StatusOK,
+		"responseMessage": "success",
+		"payload": map[string]interface{}{
+			"totalRecords":        totalRecords,
+			"totalRecordFiltered": totalFiltered,
+			"data":                prod,
+		},
+	}
+
+	log.Printf("✅ Success → returned %d products in %v\n", len(prod), time.Since(start))
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(prod)
+	json.NewEncoder(w).Encode(resp)
 }
 
 // POST /api/produk

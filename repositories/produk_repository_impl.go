@@ -19,12 +19,33 @@ func NewProdukRepository(database *sql.DB) ProdukRepository {
 	}
 }
 
-func (r *produkRepo) GetAll() ([]models.Product, error) {
-	rows, err := r.db.Query(`SELECT p.product_id, p.name, p.price, p.stock, c.category_id, c.name, c.description 
-		FROM product p 
-		JOIN category c ON p.category_id = c.category_id`)
+func (r *produkRepo) GetAll(limit, offset int, search string) ([]models.Product, int, int, error) {
+	// total semua data
+	var totalRecords int
+	err := r.db.QueryRow(`SELECT COUNT(*) FROM product`).Scan(&totalRecords)
 	if err != nil {
-		return nil, err
+		return nil, 0, 0, err
+	}
+
+	// total setelah filter
+	var totalFiltered int
+	err = r.db.QueryRow(`
+		SELECT COUNT(*) FROM product
+		WHERE ($1 = '' OR name ILIKE '%' || $1 || '%')
+	`, search).Scan(&totalFiltered)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+
+	query := `SELECT p.product_id, p.name, p.price, p.stock, c.category_id, c.name, c.description 
+		FROM product p 
+		JOIN category c ON p.category_id = c.category_id
+		where (p.name ILIKE '%' || $1 || '%')
+		order by p.product_id
+		LIMIT $2 OFFSET $3`
+	rows, err := r.db.Query(query, search, limit, offset)
+	if err != nil {
+		return nil, 0, 0, err
 	}
 	defer rows.Close()
 
@@ -33,11 +54,12 @@ func (r *produkRepo) GetAll() ([]models.Product, error) {
 		var p models.Product
 		err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Stock, &p.Category.ID, &p.Category.Name, &p.Category.Description)
 		if err != nil {
-			return nil, err
+			return nil, 0, 0, err
 		}
 		produks = append(produks, p)
 	}
-	return produks, nil
+
+	return produks, totalRecords, totalFiltered, nil
 }
 
 func (r *produkRepo) GetByID(id int) (*models.Product, error) {

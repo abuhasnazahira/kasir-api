@@ -6,8 +6,8 @@ import (
 )
 
 type APIResponse struct {
-	Status  string      `json:"status"`
-	Message string      `json:"message,omitempty"`
+	Status  int         `json:"responseCode"`
+	Message string      `json:"responseMessage,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
 }
 
@@ -19,14 +19,14 @@ func JSON(w http.ResponseWriter, statusCode int, payload APIResponse) {
 
 func Error(w http.ResponseWriter, statusCode int, message string) {
 	JSON(w, statusCode, APIResponse{
-		Status:  "error",
+		Status:  statusCode,
 		Message: message,
 	})
 }
 
 func Success(w http.ResponseWriter, message string, data interface{}) {
 	JSON(w, http.StatusOK, APIResponse{
-		Status:  "success",
+		Status:  http.StatusOK,
 		Message: message,
 		Data:    data,
 	})
@@ -34,7 +34,7 @@ func Success(w http.ResponseWriter, message string, data interface{}) {
 
 func SuccessMessage(w http.ResponseWriter, message string) {
 	JSON(w, http.StatusOK, APIResponse{
-		Status:  "success",
+		Status:  http.StatusOK,
 		Message: message,
 	})
 }
