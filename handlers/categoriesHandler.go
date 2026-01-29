@@ -6,7 +6,9 @@ import (
 	"kasir-api/models"
 	"kasir-api/routes"
 	"kasir-api/services"
+	"log"
 	"net/http"
+	"time"
 )
 
 /*
@@ -28,20 +30,33 @@ HANDLERS
 */
 // GET /api/categories/{id}
 func getCategoryByID(w http.ResponseWriter, r *http.Request) {
+	start := time.Now()
+
+	log.Println("Incoming request:", r.Method, r.URL.Path)
+
 	id, err := helpers.GetIDFromURL(r, routes.CategoryByID)
 	if err != nil {
-		helpers.Error(w, http.StatusBadRequest, "Invalid Kategori ID")
+		helpers.Error(w, http.StatusBadRequest, "Invalid Category ID")
 		return
 	}
 
-	kat, err := categoryService.GetByID(id)
+	cat, err := categoryService.GetByID(id)
 	if err != nil {
 		helpers.Error(w, http.StatusNotFound, err.Error())
 		return
 	}
 
+	resp := map[string]interface{}{
+		"responseCode":    http.StatusOK,
+		"responseMessage": "success",
+		"payload": map[string]interface{}{
+			"data": cat,
+		},
+	}
+
+	log.Printf("Success get category id=%d in %v\n", id, time.Since(start))
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(kat)
+	json.NewEncoder(w).Encode(resp)
 }
 
 // PUT /api/categories/{id}
@@ -64,8 +79,16 @@ func updateCategoryByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := map[string]interface{}{
+		"responseCode":    http.StatusOK,
+		"responseMessage": "success",
+		"payload": map[string]interface{}{
+			"data": kat,
+		},
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(kat)
+	json.NewEncoder(w).Encode(resp)
 }
 
 // DELETE /api/categories/{id}
@@ -87,14 +110,57 @@ func deleteCategoryByID(w http.ResponseWriter, r *http.Request) {
 
 // GET /api/categories
 func getAllCategory(w http.ResponseWriter, r *http.Request) {
-	kat, err := categoryService.GetAll()
+	start := time.Now()
+
+	log.Println("Incoming request:", r.Method, r.URL.Path)
+	// Query all products with filtering, sorting, pagination if needed
+	var req models.Pagination
+
+	// decode JSON body
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		helpers.Error(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	// set nilai default jika tidak digunakan
+	// Default values
+	if req.Limit <= 0 {
+		req.Limit = 10
+	}
+	if req.Offset < 0 {
+		req.Offset = 0
+	}
+
+	log.Printf("Params → limit=%d offset=%d search='%s'\n",
+		req.Limit, req.Offset, req.Search,
+	)
+
+	cat, totalRecords, totalFiltered, err := categoryService.GetAll(req.Limit, req.Offset, req.Search)
 	if err != nil {
 		helpers.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	// FIX: ubah nil slice jadi empty slice
+	if cat == nil {
+		cat = []models.Category{}
+	}
+
+	resp := map[string]interface{}{
+		"responseCode":    http.StatusOK,
+		"responseMessage": "success",
+		"payload": map[string]interface{}{
+			"totalRecords":        totalRecords,
+			"totalRecordFiltered": totalFiltered,
+			"data":                cat,
+		},
+	}
+
+	log.Printf("Success → returned %d categories in %v\n", len(cat), time.Since(start))
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(kat)
+	json.NewEncoder(w).Encode(resp)
 }
 
 // POST /api/categories
@@ -111,9 +177,16 @@ func createCategory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := map[string]interface{}{
+		"responseCode":    http.StatusCreated,
+		"responseMessage": "success",
+		"payload": map[string]interface{}{
+			"data": prod,
+		},
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(prod)
+	json.NewEncoder(w).Encode(resp)
 }
 
 /*

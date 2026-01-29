@@ -11,7 +11,7 @@ import (
 
 func InitApp(db *sql.DB) {
 	// init Repository
-	productRepo := repositories.NewProdukRepository(db)
+	productRepo := repositories.NewProductRepository(db)
 	categoryRepo := repositories.NewCategoryRepository(db)
 
 	// init Service

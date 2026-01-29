@@ -7,11 +7,11 @@ import (
 )
 
 type ProductService struct {
-	repo         repositories.ProdukRepository
+	repo         repositories.ProductRepository
 	kategoriRepo repositories.CategoryRepository // untuk validasi kategori
 }
 
-func NewProductService(repo repositories.ProdukRepository, kategoriRepo repositories.CategoryRepository) *ProductService {
+func NewProductService(repo repositories.ProductRepository, kategoriRepo repositories.CategoryRepository) *ProductService {
 	return &ProductService{
 		repo:         repo,
 		kategoriRepo: kategoriRepo,

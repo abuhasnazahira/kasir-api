@@ -7,19 +7,19 @@ import (
 )
 
 // Implementasi in-memory repository, tetap return error
-type produkRepo struct {
-	// data []models.Produk
+type productRepo struct {
+	// data []models.Product
 	db *sql.DB
 }
 
-// NewProdukRepositoryMemory buat instance in-memory repository
-func NewProdukRepository(database *sql.DB) ProdukRepository {
-	return &produkRepo{
+// NewProductRepository buat instance in-memory repository
+func NewProductRepository(database *sql.DB) ProductRepository {
+	return &productRepo{
 		db: database,
 	}
 }
 
-func (r *produkRepo) GetAll(limit, offset int, search string) ([]models.Product, int, int, error) {
+func (r *productRepo) GetAll(limit, offset int, search string) ([]models.Product, int, int, error) {
 	// total semua data
 	var totalRecords int
 	err := r.db.QueryRow(`SELECT COUNT(*) FROM product`).Scan(&totalRecords)
@@ -37,12 +37,11 @@ func (r *produkRepo) GetAll(limit, offset int, search string) ([]models.Product,
 		return nil, 0, 0, err
 	}
 
-	query := `SELECT p.product_id, p.name, p.price, p.stock, c.category_id, c.name, c.description 
-		FROM product p 
-		JOIN category c ON p.category_id = c.category_id
-		where (p.name ILIKE '%' || $1 || '%')
-		order by p.product_id
-		LIMIT $2 OFFSET $3`
+	query := `SELECT p.product_id, p.name, p.price, p.stock, c.category_id, c.name, c.description `
+	query += `FROM product p JOIN category c ON p.category_id = c.category_id `
+	query += `WHERE (p.name ILIKE '%' || $1 || '%') `
+	query += `ORDER BY p.product_id LIMIT $2 OFFSET $3`
+
 	rows, err := r.db.Query(query, search, limit, offset)
 	if err != nil {
 		return nil, 0, 0, err
@@ -62,7 +61,7 @@ func (r *produkRepo) GetAll(limit, offset int, search string) ([]models.Product,
 	return produks, totalRecords, totalFiltered, nil
 }
 
-func (r *produkRepo) GetByID(id int) (*models.Product, error) {
+func (r *productRepo) GetByID(id int) (*models.Product, error) {
 	var p models.Product
 	err := r.db.QueryRow(`SELECT p.product_id, p.name, p.price, p.stock, c.category_id, c.name, c.description 
 		FROM product p 
@@ -78,7 +77,7 @@ func (r *produkRepo) GetByID(id int) (*models.Product, error) {
 	return &p, nil
 }
 
-func (r *produkRepo) Create(p models.Product) (*models.Product, error) {
+func (r *productRepo) Create(p models.Product) (*models.Product, error) {
 	var productID int
 	err := r.db.QueryRow("INSERT INTO product (name, price, stock, category_id) VALUES ($1, $2, $3, $4) RETURNING product_id",
 		p.Name, p.Price, p.Stock, p.Category.ID).Scan(&productID)
@@ -101,7 +100,7 @@ func (r *produkRepo) Create(p models.Product) (*models.Product, error) {
 	return &createdProduct, nil
 }
 
-func (r *produkRepo) Update(id int, p models.Product) (*models.Product, error) {
+func (r *productRepo) Update(id int, p models.Product) (*models.Product, error) {
 	_, err := r.db.Exec("UPDATE product SET name = $1, price = $2, stock = $3, category_id = $4 WHERE product_id = $5",
 		p.Name, p.Price, p.Stock, p.Category.ID, id)
 	if err != nil {
@@ -123,7 +122,7 @@ func (r *produkRepo) Update(id int, p models.Product) (*models.Product, error) {
 	return &updatedProduct, nil
 }
 
-func (r *produkRepo) Delete(id int) error {
+func (r *productRepo) Delete(id int) error {
 	result, err := r.db.Exec("DELETE FROM product WHERE id = $1", id)
 	if err != nil {
 		return err
@@ -138,7 +137,7 @@ func (r *produkRepo) Delete(id int) error {
 	return nil
 }
 
-func (r *produkRepo) GetByKategoriID(categoryID int) ([]models.Product, error) {
+func (r *productRepo) GetByCategoryID(categoryID int) ([]models.Product, error) {
 	rows, err := r.db.Query(`SELECT p.product_id, p.name, p.price, p.stock, c.category_id, c.name, c.description 
 		FROM product p 
 		JOIN category c ON p.category_id = c.category_id 

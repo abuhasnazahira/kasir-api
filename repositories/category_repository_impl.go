@@ -23,10 +23,30 @@ func NewCategoryRepository(database *sql.DB) CategoryRepository {
 	}
 }
 
-func (r *categoryRepo) GetAll() ([]models.Category, error) {
-	rows, err := r.db.Query("SELECT category_id, name, description FROM category")
+func (r *categoryRepo) GetAll(limit, offset int, search string) ([]models.Category, int, int, error) {
+	// total semua data
+	var totalRecords int
+	err := r.db.QueryRow(`SELECT COUNT(*) FROM category`).Scan(&totalRecords)
 	if err != nil {
-		return nil, err
+		return nil, 0, 0, err
+	}
+
+	// total setelah filter
+	var totalFiltered int
+	err = r.db.QueryRow(`
+		SELECT COUNT(*) FROM category
+		WHERE ($1 = '' OR name ILIKE '%' || $1 || '%')
+	`, search).Scan(&totalFiltered)
+	if err != nil {
+		return nil, 0, 0, err
+	}
+
+	query := `SELECT category_id, name, description FROM category `
+	query += `WHERE (name ILIKE '%' || $1 || '%') `
+	query += `ORDER BY category_id LIMIT $2 OFFSET $3`
+	rows, err := r.db.Query(query, search, limit, offset)
+	if err != nil {
+		return nil, 0, 0, err
 	}
 	defer rows.Close()
 
@@ -34,11 +54,11 @@ func (r *categoryRepo) GetAll() ([]models.Category, error) {
 	for rows.Next() {
 		var k models.Category
 		if err := rows.Scan(&k.ID, &k.Name, &k.Description); err != nil {
-			return nil, err
+			return nil, 0, 0, err
 		}
 		kategoris = append(kategoris, k)
 	}
-	return kategoris, rows.Err()
+	return kategoris, totalRecords, totalFiltered, nil
 }
 
 func (r *categoryRepo) GetByID(id int) (*models.Category, error) {

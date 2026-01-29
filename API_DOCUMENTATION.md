@@ -18,6 +18,15 @@ http://localhost:8080/api
 
 **Description:** Mengambil semua data kategori
 
+**Request Body:**
+```json
+{
+  "search": "",
+  "limit": 10,
+  "offset": 0
+}
+```
+
 **Request:**
 ```bash
 curl -X GET http://localhost:8080/api/categories
@@ -25,18 +34,31 @@ curl -X GET http://localhost:8080/api/categories
 
 **Response (200 OK):**
 ```json
-[
-  {
-    "id": 1,
-    "name": "Makanan",
-    "description": "Produk makanan"
-  },
-  {
-    "id": 2,
-    "name": "Minuman",
-    "description": "Produk minuman"
-  }
-]
+{
+	"payload": {
+		"data": [
+			{
+				"id": 3,
+				"name": "Minuman",
+				"description": "Produk Minuman"
+			},
+			{
+				"id": 4,
+				"name": "Makanan",
+				"description": "Produk Makanan"
+			},
+			{
+				"id": 8,
+				"name": "Sepeda",
+				"description": "Produk Makanan"
+			}
+		],
+		"totalRecordFiltered": 3,
+		"totalRecords": 3
+	},
+	"responseCode": 200,
+	"responseMessage": "success"
+}
 ```
 
 ---
@@ -59,16 +81,23 @@ curl -X GET http://localhost:8080/api/categories/1
 **Response (200 OK):**
 ```json
 {
-  "id": 1,
-  "name": "Makanan",
-  "description": "Produk makanan"
+	"payload": {
+		"data": {
+			"id": 3,
+			"name": "Minuman",
+			"description": "Produk Minuman"
+		}
+	},
+	"responseCode": 200,
+	"responseMessage": "success"
 }
 ```
 
 **Response (404 Not Found):**
 ```json
 {
-  "error": "kategori tidak ditemukan"
+	"responseCode": 404,
+	"responseMessage": "Kategori tidak ditemukan"
 }
 ```
 
@@ -82,8 +111,8 @@ curl -X GET http://localhost:8080/api/categories/1
 **Request Body:**
 ```json
 {
-  "name": "Makanan",
-  "description": "Produk makanan"
+		"name": "Furniture",
+		"description": "Peralatan Rumah Tangga"
 }
 ```
 
@@ -92,24 +121,31 @@ curl -X GET http://localhost:8080/api/categories/1
 curl -X POST http://localhost:8080/api/categories \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "Makanan",
-    "description": "Produk makanan"
-  }'
+		"name": "Furniture",
+		"description": "Peralatan Rumah Tangga"
+}'
 ```
 
 **Response (201 Created):**
 ```json
 {
-  "id": 1,
-  "name": "Makanan",
-  "description": "Produk makanan"
+	"payload": {
+		"data": {
+			"id": 11,
+			"name": "Furniture",
+			"description": "Peralatan Rumah Tangga"
+		}
+	},
+	"responseCode": 201,
+	"responseMessage": "success"
 }
 ```
 
 **Response (400 Bad Request):**
 ```json
 {
-  "error": "Invalid Request Body"
+  "responseCode": 400,
+  "responseMessage": "Invalid Request Body"
 }
 ```
 
@@ -146,16 +182,23 @@ curl -X PUT http://localhost:8080/api/categories/1 \
 **Response (200 OK):**
 ```json
 {
-  "id": 1,
-  "name": "Makanan Berat",
-  "description": "Produk makanan berat"
+	"payload": {
+		"data": {
+			"id": 1,
+			"name": "Makanan Berat",
+      "description": "Produk makanan berat"
+		}
+	},
+	"responseCode": 201,
+	"responseMessage": "success"
 }
 ```
 
 **Response (400 Bad Request):**
 ```json
 {
-  "error": "Invalid Request Body"
+  "responseCode": 400,
+  "responseMessage": "Invalid Request Body"
 }
 ```
 
@@ -179,14 +222,16 @@ curl -X DELETE http://localhost:8080/api/categories/1
 **Response (200 OK):**
 ```json
 {
-  "message": "Sukses delete"
+  "responseCode": 200,
+  "responseMessage": "Sukses delete"
 }
 ```
 
 **Response (404 Not Found):**
 ```json
 {
-  "error": "kategori tidak ditemukan"
+	"responseCode": 404,
+	"responseMessage": "Kategori tidak ditemukan"
 }
 ```
 
@@ -205,41 +250,103 @@ curl -X DELETE http://localhost:8080/api/categories/1
 | limit | integer | 10 | Jumlah data per halaman |
 | offset | integer | 0 | Jumlah data yang di-skip |
 
+**Request Body:**
+```json
+{
+  "search": "",
+  "limit": 10,
+  "offset": 0
+}
+```
+
 **Request:**
 ```bash
-curl -X GET "http://localhost:8080/api/product?limit=10&offset=0"
+curl -X GET http://localhost:8080/api/product \
+  -H "Content-Type: application/json" \
+  -d '{
+    "search": "",
+    "limit": 10,
+    "offset": 0
+  }'
 ```
 
 **Response (200 OK):**
 ```json
 {
-  "data": [
-    {
-      "id": 1,
-      "name": "Nasi Goreng",
-      "price": 25000,
-      "stock": 10,
-      "category": {
-        "id": 1,
-        "name": "Makanan",
-        "description": "Produk makanan"
-      }
-    },
-    {
-      "id": 2,
-      "name": "Mie Goreng",
-      "price": 20000,
-      "stock": 15,
-      "category": {
-        "id": 1,
-        "name": "Makanan",
-        "description": "Produk makanan"
-      }
-    }
-  ],
-  "total": 50,
-  "limit": 10,
-  "offset": 0
+	"payload": {
+		"data": [
+			{
+				"id": 1,
+				"name": "Coca Cola 1L",
+				"price": 3000,
+				"stock": 20,
+				"category": {
+					"id": 3,
+					"name": "Minuman",
+					"description": "Produk Minuman"
+				}
+			},
+			{
+				"id": 2,
+				"name": "Chiki balls",
+				"price": 2000,
+				"stock": 40,
+				"category": {
+					"id": 4,
+					"name": "Makanan",
+					"description": "Produk Makanan"
+				}
+			},
+			{
+				"id": 3,
+				"name": "Taro Snack",
+				"price": 2000,
+				"stock": 40,
+				"category": {
+					"id": 4,
+					"name": "Makanan",
+					"description": "Produk Makanan"
+				}
+			},
+			{
+				"id": 4,
+				"name": "Coca Cola 1L",
+				"price": 3000,
+				"stock": 20,
+				"category": {
+					"id": 3,
+					"name": "Minuman",
+					"description": "Produk Minuman"
+				}
+			},
+			{
+				"id": 5,
+				"name": "Coca Cola 1L",
+				"price": 3000,
+				"stock": 20,
+				"category": {
+					"id": 3,
+					"name": "Minuman",
+					"description": "Produk Minuman"
+				}
+			},
+			{
+				"id": 6,
+				"name": "Coca Cola 1L",
+				"price": 3000,
+				"stock": 20,
+				"category": {
+					"id": 3,
+					"name": "Minuman",
+					"description": "Produk Minuman"
+				}
+			}
+		],
+		"totalRecordFiltered": 6,
+		"totalRecords": 6
+	},
+	"responseCode": 200,
+	"responseMessage": "success"
 }
 ```
 
@@ -278,7 +385,8 @@ curl -X GET http://localhost:8080/api/product/1
 **Response (404 Not Found):**
 ```json
 {
-  "error": "Product tidak ditemukan"
+  "responseCode": 404,
+	"responseMessage": "Product tidak ditemukan"
 }
 ```
 
@@ -333,7 +441,8 @@ curl -X POST http://localhost:8080/api/product \
 **Response (400 Bad Request):**
 ```json
 {
-  "error": "Kategori tidak ditemukan"
+  "responseCode": 404,
+	"responseMessage": "Product tidak ditemukan"
 }
 ```
 
@@ -352,12 +461,22 @@ curl -X POST http://localhost:8080/api/product \
 **Request Body:**
 ```json
 {
-  "name": "Nasi Goreng Special",
-  "price": 30000,
-  "stock": 20,
-  "category": {
-    "categoryId": 1
-  }
+	"payload": {
+		"data": [
+			{
+        "name": "Nasi Goreng Special",
+        "price": 30000,
+        "stock": 20,
+        "category": {
+          "categoryId": 1
+        }
+      }
+		],
+		"totalRecordFiltered": 3,
+		"totalRecords": 3
+	},
+	"responseCode": 200,
+	"responseMessage": "success"
 }
 ```
 
@@ -378,22 +497,33 @@ curl -X PUT http://localhost:8080/api/product/1 \
 **Response (200 OK):**
 ```json
 {
-  "productId": 1,
-  "name": "Nasi Goreng Special",
-  "price": 30000,
-  "stock": 20,
-  "category": {
-    "categoryId": 1,
-    "name": "Makanan",
-    "description": "Produk makanan"
-  }
+	"payload": {
+		"data": [
+			{
+        "productId": 1,
+        "name": "Nasi Goreng Special",
+        "price": 30000,
+        "stock": 20,
+        "category": {
+          "categoryId": 1,
+          "name": "Makanan",
+          "description": "Produk makanan"
+        }
+      }
+		],
+		"totalRecordFiltered": 3,
+		"totalRecords": 3
+	},
+	"responseCode": 200,
+	"responseMessage": "success"
 }
 ```
 
 **Response (404 Not Found):**
 ```json
 {
-  "error": "Product tidak ditemukan"
+  "responseCode": 404,
+	"responseMessage": "Product tidak ditemukan"
 }
 ```
 
@@ -417,14 +547,16 @@ curl -X DELETE http://localhost:8080/api/product/1
 **Response (200 OK):**
 ```json
 {
-  "message": "Sukses delete"
+  "responseCode": 200,
+  "responseMessage": "Sukses delete"
 }
 ```
 
 **Response (404 Not Found):**
 ```json
 {
-  "error": "Product tidak ditemukan"
+  "responseCode": 404,
+	"responseMessage": "Product tidak ditemukan"
 }
 ```
 
@@ -436,8 +568,8 @@ Semua error response mengikuti format:
 
 ```json
 {
-  "error": "Deskripsi error",
-  "status": "error"
+  "responseCode": "errorCode",
+	"responseMessage": "Deskripsi error"
 }
 ```
 

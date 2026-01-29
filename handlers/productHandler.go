@@ -26,7 +26,7 @@ HANDLERS
 // GET /api/produk/{id}
 func getProductByID(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	log.Println("📥 Get Product By ID")
+	log.Println("Get Product By ID")
 
 	id, err := helpers.GetIDFromURL(r, routes.ProductByID)
 	if err != nil {
@@ -48,7 +48,7 @@ func getProductByID(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	log.Printf("✅ Success get product id=%d in %v\n", id, time.Since(start))
+	log.Printf("Success get product id=%d in %v\n", id, time.Since(start))
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
@@ -74,8 +74,16 @@ func updateProductByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := map[string]interface{}{
+		"responseCode":    http.StatusCreated,
+		"responseMessage": "success",
+		"payload": map[string]interface{}{
+			"data": prod,
+		},
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(prod)
+	json.NewEncoder(w).Encode(resp)
 }
 
 // DELETE /api/produk/{id}
@@ -99,7 +107,7 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 func getAllProduct(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
-	log.Println("📥 Incoming request:", r.Method, r.URL.Path)
+	log.Println("Incoming request:", r.Method, r.URL.Path)
 	// Query all products with filtering, sorting, pagination if needed
 	var req models.Pagination
 
@@ -118,7 +126,7 @@ func getAllProduct(w http.ResponseWriter, r *http.Request) {
 		req.Offset = 0
 	}
 
-	log.Printf("🔎 Params → limit=%d offset=%d search='%s'\n",
+	log.Printf("Params → limit=%d offset=%d search='%s'\n",
 		req.Limit, req.Offset, req.Search,
 	)
 
@@ -143,7 +151,7 @@ func getAllProduct(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 
-	log.Printf("✅ Success → returned %d products in %v\n", len(prod), time.Since(start))
+	log.Printf("Success → returned %d products in %v\n", len(prod), time.Since(start))
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
@@ -163,9 +171,16 @@ func createProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := map[string]interface{}{
+		"responseCode":    http.StatusCreated,
+		"responseMessage": "success",
+		"payload": map[string]interface{}{
+			"data": prod,
+		},
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(prod)
+	json.NewEncoder(w).Encode(resp)
 }
 
 /*

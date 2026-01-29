@@ -8,18 +8,18 @@ import (
 
 type CategoryService struct {
 	repo       repositories.CategoryRepository
-	produkRepo repositories.ProdukRepository // untuk cek apakah ada produk terkait
+	produkRepo repositories.ProductRepository // untuk cek apakah ada produk terkait
 }
 
-func NewCategoryService(repo repositories.CategoryRepository, produkRepo repositories.ProdukRepository) *CategoryService {
+func NewCategoryService(repo repositories.CategoryRepository, produkRepo repositories.ProductRepository) *CategoryService {
 	return &CategoryService{
 		repo:       repo,
 		produkRepo: produkRepo,
 	}
 }
 
-func (s *CategoryService) GetAll() ([]models.Category, error) {
-	return s.repo.GetAll()
+func (s *CategoryService) GetAll(limit, offset int, search string) ([]models.Category, int, int, error) {
+	return s.repo.GetAll(limit, offset, search)
 }
 
 func (s *CategoryService) GetByID(id int) (*models.Category, error) {
@@ -36,7 +36,7 @@ func (s *CategoryService) Update(id int, p models.Category) (*models.Category, e
 
 func (s *CategoryService) Delete(id int) error {
 	// cek apakah ada produk terkait kategori ini
-	produk, _ := s.produkRepo.GetByKategoriID(id)
+	produk, _ := s.produkRepo.GetByCategoryID(id)
 	if len(produk) > 0 {
 		return errors.New("kategori masih digunakan oleh produk, tidak bisa dihapus")
 	}
