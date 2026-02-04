@@ -110,13 +110,30 @@ func getAllProduct(w http.ResponseWriter, r *http.Request) {
 	log.Println("Incoming request:", r.Method, r.URL.Path)
 	// Query all products with filtering, sorting, pagination if needed
 	var req models.Pagination
+	name := r.URL.Query().Get("name")
+	// limit := r.URL.Query().Get("limit")
+	// offset := r.URL.Query().Get("offset")
 
-	// decode JSON body
-	err := json.NewDecoder(r.Body).Decode(&req)
+	pageInt, err := helpers.GetQueryInt(r, "page", 10)
 	if err != nil {
-		helpers.Error(w, http.StatusBadRequest, "Invalid request body")
+		helpers.Error(w, http.StatusBadRequest, "Invalid page parameter")
 		return
 	}
+	pageSizeInt, err := helpers.GetQueryInt(r, "pageSize", 0)
+	if err != nil {
+		helpers.Error(w, http.StatusBadRequest, "Invalid pageSize parameter")
+		return
+	}
+	req.Limit = pageInt
+	req.Offset = (pageInt - 1) * pageSizeInt
+	req.Search = name
+
+	// decode JSON body
+	// err := json.NewDecoder(r.Body).Decode(&req)
+	// if err != nil {
+	// 	helpers.Error(w, http.StatusBadRequest, "Invalid request body")
+	// 	return
+	// }
 	// set nilai default jika tidak digunakan
 	// Default values
 	if req.Limit <= 0 {

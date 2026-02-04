@@ -2,9 +2,14 @@ package services
 
 import (
 	"errors"
+	"fmt"
 	"kasir-api/models"
 	"kasir-api/repositories"
+
+	"github.com/go-playground/validator/v10"
 )
+
+var validate *validator.Validate
 
 type ProductService struct {
 	repo         repositories.ProductRepository
@@ -30,9 +35,13 @@ func (s *ProductService) GetByID(id int) (*models.Product, error) {
 
 // Create buat produk baru
 func (s *ProductService) Create(p models.Product) (*models.Product, error) {
+	errValid := validate.Struct(p)
+	if errValid == nil {
+		fmt.Println("Product data is valid")
+	}
 	// validasi kategori
 	if _, err := s.kategoriRepo.GetByID(p.Category.ID); err != nil {
-		return nil, errors.New("Kategori tidak ditemukan")
+		return nil, errors.New("Category not found")
 	}
 
 	return s.repo.Create(p)
@@ -42,7 +51,7 @@ func (s *ProductService) Create(p models.Product) (*models.Product, error) {
 func (s *ProductService) Update(id int, p models.Product) (*models.Product, error) {
 	// validasi kategori
 	if _, err := s.kategoriRepo.GetByID(p.Category.ID); err != nil {
-		return nil, errors.New("kategori tidak ditemukan")
+		return nil, errors.New("Category not found")
 	}
 
 	return s.repo.Update(id, p)

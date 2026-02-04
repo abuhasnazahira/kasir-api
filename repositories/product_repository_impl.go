@@ -78,8 +78,26 @@ func (r *productRepo) GetByID(id int) (*models.Product, error) {
 }
 
 func (r *productRepo) Create(p models.Product) (*models.Product, error) {
+	var productExist bool
+	err := r.db.QueryRow("SELECT EXISTS(SELECT 1 FROM product WHERE name = $1)", p.Name).Scan(&productExist)
+	if err != nil {
+		return nil, err
+	}
+	if productExist {
+		return nil, errors.New("Product already exists")
+	}
+
+	var categoryExists bool
+	err = r.db.QueryRow("SELECT EXISTS(SELECT 1 FROM category WHERE category_id = $1)", p.Category.ID).Scan(&categoryExists)
+	if err != nil {
+		return nil, err
+	}
+	if !categoryExists {
+		return nil, errors.New("Category not found")
+	}
+
 	var productID int
-	err := r.db.QueryRow("INSERT INTO product (name, price, stock, category_id) VALUES ($1, $2, $3, $4) RETURNING product_id",
+	err = r.db.QueryRow("INSERT INTO product (name, price, stock, category_id) VALUES ($1, $2, $3, $4) RETURNING product_id",
 		p.Name, p.Price, p.Stock, p.Category.ID).Scan(&productID)
 	if err != nil {
 		return nil, err
