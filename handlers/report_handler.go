@@ -24,7 +24,7 @@ func (h *ReportHandler) GetTodayReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := map[string]interface{}{
-		"responseCode":    http.StatusCreated,
+		"responseCode":    http.StatusOK,
 		"responseMessage": "success",
 		"payload": map[string]interface{}{
 			"data": report,
@@ -67,7 +67,7 @@ func (h *ReportHandler) GetReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	resp := map[string]interface{}{
-		"responseCode":    http.StatusCreated,
+		"responseCode":    http.StatusOK,
 		"responseMessage": "success",
 		"payload": map[string]interface{}{
 			"data": result,

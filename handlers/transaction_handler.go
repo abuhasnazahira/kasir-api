@@ -39,6 +39,14 @@ func (h *TransactionHandler) Checkout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	resp := map[string]interface{}{
+		"responseCode":    http.StatusCreated,
+		"responseMessage": "success",
+		"payload": map[string]interface{}{
+			"data": transaction,
+		},
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(transaction)
+	json.NewEncoder(w).Encode(resp)
 }
