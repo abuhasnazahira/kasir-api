@@ -11,10 +11,23 @@ import (
 	"time"
 )
 
-var productService *services.ProductService
+// var productService *services.ProductService
 
-func InitProductHandler(svc *services.ProductService) {
-	productService = svc
+//	func InitProductHandler(svc *services.ProductService) {
+//		productService = svc
+//	}
+
+/*
+====================
+Definition
+====================
+*/
+type ProductHandler struct {
+	service *services.ProductService
+}
+
+func NewProductHandler(service *services.ProductService) *ProductHandler {
+	return &ProductHandler{service: service}
 }
 
 /*
@@ -22,9 +35,9 @@ func InitProductHandler(svc *services.ProductService) {
 HANDLERS
 ====================
 */
-
 // GET /api/produk/{id}
-func getProductByID(w http.ResponseWriter, r *http.Request) {
+// func getProductByID(w http.ResponseWriter, r *http.Request) {
+func (h *ProductHandler) getProductByID(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	log.Println("Get Product By ID")
 
@@ -34,7 +47,7 @@ func getProductByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prod, err := productService.GetByID(id)
+	prod, err := h.service.GetByID(id)
 	if err != nil {
 		helpers.Error(w, http.StatusNotFound, err.Error())
 		return
@@ -55,7 +68,7 @@ func getProductByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // PUT /api/produk/{id}
-func updateProductByID(w http.ResponseWriter, r *http.Request) {
+func (h *ProductHandler) updateProductByID(w http.ResponseWriter, r *http.Request) {
 	id, err := helpers.GetIDFromURL(r, routes.ProductByID)
 	if err != nil {
 		helpers.Error(w, http.StatusBadRequest, "Invalid Produk ID")
@@ -68,7 +81,7 @@ func updateProductByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	prod, err := productService.Update(id, updatedProduk)
+	prod, err := h.service.Update(id, updatedProduk)
 	if err != nil {
 		helpers.Error(w, http.StatusNotFound, err.Error())
 		return
@@ -87,14 +100,14 @@ func updateProductByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // DELETE /api/produk/{id}
-func deleteProductByID(w http.ResponseWriter, r *http.Request) {
+func (h *ProductHandler) deleteProductByID(w http.ResponseWriter, r *http.Request) {
 	id, err := helpers.GetIDFromURL(r, routes.ProductByID)
 	if err != nil {
 		helpers.Error(w, http.StatusBadRequest, "Invalid Produk ID")
 		return
 	}
 
-	err = productService.Delete(id)
+	err = h.service.Delete(id)
 	if err != nil {
 		helpers.Error(w, http.StatusNotFound, err.Error())
 		return
@@ -104,7 +117,7 @@ func deleteProductByID(w http.ResponseWriter, r *http.Request) {
 }
 
 // GET /api/produk
-func getAllProduct(w http.ResponseWriter, r *http.Request) {
+func (h *ProductHandler) getAllProduct(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 
 	log.Println("Incoming request:", r.Method, r.URL.Path)
@@ -147,7 +160,7 @@ func getAllProduct(w http.ResponseWriter, r *http.Request) {
 		req.Limit, req.Offset, req.Search,
 	)
 
-	prod, totalRecords, totalFiltered, err := productService.GetAll(req.Limit, req.Offset, req.Search)
+	prod, totalRecords, totalFiltered, err := h.service.GetAll(req.Limit, req.Offset, req.Search)
 	if err != nil {
 		helpers.Error(w, http.StatusInternalServerError, err.Error())
 		return
@@ -175,14 +188,14 @@ func getAllProduct(w http.ResponseWriter, r *http.Request) {
 }
 
 // POST /api/produk
-func createProduct(w http.ResponseWriter, r *http.Request) {
+func (h *ProductHandler) createProduct(w http.ResponseWriter, r *http.Request) {
 	var produkBaru models.Product
 	if err := json.NewDecoder(r.Body).Decode(&produkBaru); err != nil {
 		helpers.Error(w, http.StatusBadRequest, "Invalid Request Body")
 		return
 	}
 
-	prod, err := productService.Create(produkBaru)
+	prod, err := h.service.Create(produkBaru)
 	if err != nil {
 		helpers.Error(w, http.StatusBadRequest, err.Error())
 		return
@@ -205,31 +218,32 @@ func createProduct(w http.ResponseWriter, r *http.Request) {
 ROUTING
 ====================
 */
-
-func RegisterProductRoutes() {
+func (h *ProductHandler) HandleProductId(w http.ResponseWriter, r *http.Request) {
 	// GET / PUT / DELETE by ID
-	http.HandleFunc(routes.ProductByID, func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			getProductByID(w, r)
-		case http.MethodPut:
-			updateProductByID(w, r)
-		case http.MethodDelete:
-			deleteProductByID(w, r)
-		default:
-			helpers.Error(w, http.StatusMethodNotAllowed, "Method Not Allowed")
-		}
-	})
+	// http.HandleFunc(routes.ProductByID, func(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		h.getProductByID(w, r)
+	case http.MethodPut:
+		h.updateProductByID(w, r)
+	case http.MethodDelete:
+		h.deleteProductByID(w, r)
+	default:
+		helpers.Error(w, http.StatusMethodNotAllowed, "Method Not Allowed")
+	}
+	// })
+}
 
+func (h *ProductHandler) HandleProducts(w http.ResponseWriter, r *http.Request) {
 	// GET / POST
-	http.HandleFunc(routes.Product, func(w http.ResponseWriter, r *http.Request) {
-		switch r.Method {
-		case http.MethodGet:
-			getAllProduct(w, r)
-		case http.MethodPost:
-			createProduct(w, r)
-		default:
-			helpers.Error(w, http.StatusMethodNotAllowed, "Method Not Allowed")
-		}
-	})
+	// http.HandleFunc(routes.Product, func(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		h.getAllProduct(w, r)
+	case http.MethodPost:
+		h.createProduct(w, r)
+	default:
+		helpers.Error(w, http.StatusMethodNotAllowed, "Method Not Allowed")
+	}
+	// })
 }

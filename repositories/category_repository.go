@@ -9,4 +9,5 @@ type CategoryRepository interface {
 	Create(p models.Category) (*models.Category, error)
 	Update(id int, p models.Category) (*models.Category, error)
 	Delete(id int) error
+	GetByCategoryID(categoryID int) ([]models.Product, error)
 }

@@ -2,11 +2,18 @@ package handlers
 
 import (
 	"encoding/json"
+	"kasir-api/helpers"
 	"kasir-api/models"
 	"kasir-api/services"
 	"net/http"
 	"time"
 )
+
+/*
+====================
+Definition
+====================
+*/
 
 type ReportHandler struct {
 	service *services.ReportService
@@ -19,7 +26,7 @@ func NewReportHandler(service *services.ReportService) *ReportHandler {
 func (h *ReportHandler) GetTodayReport(w http.ResponseWriter, r *http.Request) {
 	report, err := h.service.GetTodayReport()
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		helpers.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -53,7 +60,7 @@ func (h *ReportHandler) GetReport(w http.ResponseWriter, r *http.Request) {
 		end, err2 := time.Parse("2006-01-02", endDate)
 
 		if err1 != nil || err2 != nil {
-			http.Error(w, "invalid date format (YYYY-MM-DD)", http.StatusBadRequest)
+			helpers.Error(w, http.StatusBadRequest, "invalid date format (YYYY-MM-DD)")
 			return
 		}
 
@@ -62,7 +69,7 @@ func (h *ReportHandler) GetReport(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		helpers.Error(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 

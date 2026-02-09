@@ -113,3 +113,25 @@ func (r *categoryRepo) Delete(id int) error {
 	}
 	return nil
 }
+
+func (r *categoryRepo) GetByCategoryID(categoryID int) ([]models.Product, error) {
+	rows, err := r.db.Query(`SELECT p.product_id, p.name, p.price, p.stock, c.category_id, c.name, c.description 
+		FROM product p 
+		JOIN category c ON p.category_id = c.category_id 
+		WHERE p.category_id = $1`, categoryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var produks []models.Product
+	for rows.Next() {
+		var p models.Product
+		err := rows.Scan(&p.ID, &p.Name, &p.Price, &p.Stock, &p.Category.ID, &p.Category.Name, &p.Category.Description)
+		if err != nil {
+			return nil, err
+		}
+		produks = append(produks, p)
+	}
+	return produks, nil
+}

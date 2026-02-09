@@ -1,11 +1,20 @@
 package routes
 
 const (
-	API = "/api"
+	basePath = "/api"
 
-	Product     = API + "/product"
+	// Category
+	Category     = basePath + "/categories"
+	CategoryByID = Category + "/"
+
+	// Product
+	Product     = basePath + "/products"
 	ProductByID = Product + "/"
 
-	Category     = API + "/categories"
-	CategoryByID = Category + "/"
+	// Transaction
+	Checkout = basePath + "/checkout"
+
+	// Report
+	ReportToday = basePath + "/report/hari-ini"
+	Report      = basePath + "/report"
 )

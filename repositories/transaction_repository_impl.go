@@ -17,10 +17,7 @@ func NewTransactionRepository(database *sql.DB) TransactionRepository {
 	}
 }
 
-func (repo *transactionRepo) CreateTransaction(
-	items []models.CheckoutItem,
-) (*models.Transaction, error) {
-
+func (repo *transactionRepo) CreateTransaction(items []models.CheckoutItem) (*models.Transaction, error) {
 	tx, err := repo.db.Begin()
 	if err != nil {
 		return nil, err

@@ -385,7 +385,7 @@ curl -X GET http://localhost:8080/api/product/1
 **Response (404 Not Found):**
 ```json
 {
-  "responseCode": 404,
+  	"responseCode": 404,
 	"responseMessage": "Product tidak ditemukan"
 }
 ```
@@ -441,7 +441,7 @@ curl -X POST http://localhost:8080/api/product \
 **Response (400 Bad Request):**
 ```json
 {
-  "responseCode": 404,
+  	"responseCode": 404,
 	"responseMessage": "Product tidak ditemukan"
 }
 ```
@@ -522,7 +522,7 @@ curl -X PUT http://localhost:8080/api/product/1 \
 **Response (404 Not Found):**
 ```json
 {
-  "responseCode": 404,
+  	"responseCode": 404,
 	"responseMessage": "Product tidak ditemukan"
 }
 ```
@@ -560,6 +560,178 @@ curl -X DELETE http://localhost:8080/api/product/1
 }
 ```
 
+## Transaction Endpoints
+
+### 1. Checkout
+**Endpoint:** `POST /api/checkout`
+
+**Description:** Memproses permintaan checkout dengan menerima data item (product_id dan quantity), melakukan validasi stok, menghitung subtotal dan total transaksi, lalu membuat record transaksi dan detail transaksi.
+
+**Query Parameters:**
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| product_id | integer | - | ID produk yang akan dibeli |
+| quantity | integer | 1 | Jumlah unit produk yang dibeli |
+
+**Request Body:**
+```json
+{
+  "items": [
+    {
+      "product_id": 6,
+      "quantity": 2
+    },
+    {
+      "product_id": 7,
+      "quantity": 2
+    }
+  ]
+}
+```
+
+**Request:**
+```bash
+curl -X POST http://localhost:8080/api/checkout \
+  -H "Content-Type: application/json" \
+  -d '{
+  "items": [
+    {
+      "product_id": 6,
+      "quantity": 2
+    },
+    {
+      "product_id": 7,
+      "quantity": 2
+    }
+  ]
+}
+'
+```
+
+**Response (200 OK):**
+```json
+{
+	"payload": {
+		"data": {
+			"id": 3,
+			"total_amount": 10000,
+			"created_at": "0001-01-01T00:00:00Z",
+			"details": [
+				{
+					"id": 5,
+					"transaction_id": 3,
+					"product_id": 6,
+					"product_name": "Coca Cola 1L",
+					"quantity": 2,
+					"subtotal": 6000
+				},
+				{
+					"id": 6,
+					"transaction_id": 3,
+					"product_id": 7,
+					"product_name": "Taro Snack",
+					"quantity": 2,
+					"subtotal": 4000
+				}
+			]
+		}
+	},
+	"responseCode": 201,
+	"responseMessage": "success"
+}
+```
+
+**Response (500 Internal Server Error):**
+```json
+{
+  	"responseCode": 500,
+	"responseMessage": "Internal Server Error"
+}
+```
+
+## Report Endpoints
+
+### 1. Report Sales Summary Today
+**Endpoint:** `GET /api/report/hari-ini`
+
+**Description:** Mengambil ringkasan laporan penjualan untuk hari ini, termasuk total transaksi, total pendapatan, dan jumlah produk yang terjual berdasarkan data transaksi yang tercatat di sistem.
+
+**Request:**
+```bash
+curl -X GET http://localhost:8080/api/report/hari-ini \
+  -H "Content-Type: application/json" \
+```
+
+**Response (200 OK):**
+```json
+{
+	"payload": {
+		"data": {
+			"total_revenue": 0,
+			"total_transaksi": 0,
+			"produk_terlaris": {
+				"nama": "",
+				"qty_terjual": 0
+			}
+		}
+	},
+	"responseCode": 200,
+	"responseMessage": "success"
+}
+```
+
+**Response (500 Internal Server Error):**
+```json
+{
+  	"responseCode": 500,
+	"responseMessage": "Internal Server Error"
+}
+```
+
+### 2. Report Sales Summary Date Range Filter
+**Endpoint:** `GET /api/report?start_date=2026-01-01&end_date=2026-02-01`
+
+**Description:** Mengambil ringkasan laporan penjualan berdasarkan rentang tanggal tertentu, termasuk total transaksi, total pendapatan, dan jumlah produk yang terjual dari data transaksi yang tercatat dalam sistem.
+
+**Query Parameters:**
+| Name | Type | Default | Description |
+|------|------|---------|-------------|
+| start_date | string | - | Tanggal awal periode laporan penjualan (format: YYYY-MM-DD) |
+| end_date | string | - | Tanggal akhir periode laporan penjualan (format: YYYY-MM-DD) |
+
+
+**Request:**
+```bash
+curl -X GET http://localhost:8080/api/report?start_date=2026-01-01&end_date=2026-02-01 \
+  -H "Content-Type: application/json" \
+```
+
+**Response (200 OK):**
+```json
+{
+	"payload": {
+		"data": {
+			"total_revenue": 36000,
+			"total_transaksi": 3,
+			"produk_terlaris": {
+				"nama": "Coca Cola 1L",
+				"qty_terjual": 6
+			}
+		}
+	},
+	"responseCode": 200,
+	"responseMessage": "success"
+}
+```
+
+**Response (500 Internal Server Error):**
+```json
+{
+  	"responseCode": 500,
+	"responseMessage": "Internal Server Error"
+}
+```
+
 ---
 
 ## Error Response Format
@@ -568,7 +740,7 @@ Semua error response mengikuti format:
 
 ```json
 {
-  "responseCode": "errorCode",
+  	"responseCode": "errorCode",
 	"responseMessage": "Deskripsi error"
 }
 ```
@@ -587,27 +759,66 @@ Semua error response mengikuti format:
 
 ## Model Data
 
-### Kategori Model
+### Category Model
 ```json
 {
-  "categoryId": 1,
-  "name": "Makanan",
-  "description": "Produk makanan"
+	"categoryId": 1,
+	"name": "Makanan",
+	"description": "Produk makanan"
 }
 ```
 
-### Produk Model
+### Product Model
 ```json
 {
-  "productId": 1,
-  "name": "Nasi Goreng",
-  "price": 25000,
-  "stock": 10,
-  "category": {
-    "categoryId": 1,
-    "name": "Makanan",
-    "description": "Produk makanan"
-  }
+	"productId": 1,
+	"name": "Nasi Goreng",
+	"price": 25000,
+	"stock": 10,
+	"category": {
+		"categoryId": 1,
+		"name": "Makanan",
+		"description": "Produk makanan"
+	}
+}
+```
+
+### Transaction Model
+```json
+{
+  	"id": 3,
+	"total_amount": 10000,
+	"created_at": "0001-01-01T00:00:00Z",
+	"details": [
+		{
+			"id": 5,
+			"transaction_id": 3,
+			"product_id": 6,
+			"product_name": "Coca Cola 1L",
+			"quantity": 2,
+			"subtotal": 6000
+		},
+		{
+			"id": 6,
+			"transaction_id": 3,
+			"product_id": 7,
+			"product_name": "Taro Snack",
+			"quantity": 2,
+			"subtotal": 4000
+		}
+	]
+}
+```
+
+### Transaction Detail Model
+```json
+{
+	"id": 5,
+	"transaction_id": 3,
+	"product_id": 6,
+	"product_name": "Coca Cola 1L",
+	"quantity": 2,
+	"subtotal": 6000
 }
 ```
 
@@ -627,6 +838,9 @@ Semua error response mengikuti format:
 | POST | `/api/product` | Create produk |
 | PUT | `/api/product/{id}` | Update produk |
 | DELETE | `/api/product/{id}` | Delete produk |
+| POST | `/api/checkout` | Create Checkout Transaction |
+| GET | `/api/report/hari-ini` | Get Report Sales Summary current date|
+| GET | `/api/report?start_date={start_date}&end_date={end_date}` | Get Report Sales Summary with date range filter|
 
 ---
 

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"kasir-api/handlers"
 	"kasir-api/repositories"
+	"kasir-api/routes"
 	"kasir-api/services"
 	"net/http"
 
@@ -11,34 +12,34 @@ import (
 )
 
 func InitApp(db *sql.DB) {
-	// init Repository
-	productRepo := repositories.NewProductRepository(db)
+	// Category
 	categoryRepo := repositories.NewCategoryRepository(db)
+	categoryService := services.NewCategoryService(categoryRepo)
+	categoryHandler := handlers.NewCategoryHandler(categoryService)
 
-	// init Service
+	http.HandleFunc(routes.CategoryByID, categoryHandler.HandleCategoryId) // GET / PUT / DELETE by ID
+	http.HandleFunc(routes.Category, categoryHandler.HandleCategories)     // GET all categories / POST new product
+
+	// Product
+	productRepo := repositories.NewProductRepository(db)
 	productService := services.NewProductService(productRepo, categoryRepo)
-	categoryService := services.NewCategoryService(categoryRepo, productRepo)
+	productHandler := handlers.NewProductHandler(productService)
 
-	// init Controller
-	handlers.InitProductHandler(productService)
-	handlers.InitCategoryHandler(categoryService)
-
-	// init Routes
-	handlers.RegisterProductRoutes()
-	handlers.RegisterCategoryRoutes()
+	http.HandleFunc(routes.ProductByID, productHandler.HandleProductId) // GET / PUT / DELETE by ID
+	http.HandleFunc(routes.Product, productHandler.HandleProducts)      // GET all products / POST new product
 
 	// Transaction
 	transactionRepo := repositories.NewTransactionRepository(db)
 	transactionService := services.NewTransactionService(transactionRepo)
 	transactionHandler := handlers.NewTransactionHandler(transactionService)
 
-	http.HandleFunc("/api/checkout", transactionHandler.HandleCheckout) // POST
+	http.HandleFunc(routes.Checkout, transactionHandler.HandleCheckout) // POST checkout transaction
 
 	// Report
 	reportRepoRepo := repositories.NewReportRepository(db)
 	reportService := services.NewReportService(reportRepoRepo)
 	reportHandler := handlers.NewReportHandler(reportService)
 
-	http.HandleFunc("/api/report/hari-ini", reportHandler.GetTodayReport) // GET
-	http.HandleFunc("/api/report", reportHandler.GetReport)               // GET with query params
+	http.HandleFunc(routes.ReportToday, reportHandler.GetTodayReport) // GET Report Today
+	http.HandleFunc(routes.Report, reportHandler.GetReport)           // GET Report with date range filter
 }
